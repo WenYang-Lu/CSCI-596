@@ -5,26 +5,29 @@ rng(7); % random seed
 load("data/Temperature_Graph.mat");
 
 A=double(full(G.W)); % adjacency matrix
-lmaxA=eigs(A,1); [VA,lamA]=eig(A); lamA=diag(lamA);
+[VA,lamA]=eig(A); lamA=diag(lamA); lmaxA=max(lamA); lminA=min(lamA);  
 
 L=diag(sum(A))-A; % Laplacian matrix
-lmaxL=eigs(L,1); [VL,lamL]=eig(L); lamL=diag(lamL); G.L=L; G.lmax=lmaxL;
+[VL,lamL]=eig(L); lamL=diag(lamL); G.L=L; lmaxL=max(lamL); G.lmax=lmaxL;
 
 N=G.N; % total number of graph nodes
 x=(G.maxTemp+G.minTemp)/2; % graph signal: average temperature
+% x=G.minTemp % graph signal: average temperature
 
 %% Ideal filter
-fcL=0.75; %cut-off frequency
-fun_gL= @(lam) double(lam<=fcL*lmaxL);
-fun_gA= @(lam) double(lam>=-(fcL-0.5)*2*lmaxA);
+fc=0.4; %cut-off frequency
+fun_gL= @(lam) double(lam<=fc*lmaxL);
+fun_gA= @(lam) double(lam>=-(fc-0.5)*2*lmaxA);
 
 %% Chebyshev filter approximation
-M=20; % filter's polynomial order
-c_cheby=gsp_cheby_coeff(G,fun_gL,M);
+M=10; % filter's polynomial order
+[b_butter,a_butter] = butter(3,fc);
+fun_butter= @(lam) abs(polyval(b_butter,exp(-1j*lam/lmaxL*pi))./polyval(a_butter,exp(-1j*lam/lmaxL*pi)));
+c_cheby=gsp_cheby_coeff(G,fun_butter,M);
 
 %% Noisy signal setting
 mu=0; 
-sig=sqrt(0.25);
+sig=sqrt(0.5);
 % sig=sqrt([0.25,0.2,0.15,0.1,0.05]); 
 % sig=sqrt([2.5,2.0,1.5,1.0,0.5]); 
 % sig=sqrt([5,4,3,2,1]);
@@ -46,17 +49,17 @@ for s=1:S
     MSE_ori(s)=immse(x,xn(:,s)); % MSE_ori=norm(fn-f).^2/N;
     SNR_ori(s)=snr(x,xn(:,s)-x); % SNR_ori=20*log10(norm(f)/norm(fn-f));
 
-    % chebyshev filter
+    % chebyshev filtering
     tic;
-    y_chebyL=gsp_cheby_op(G,c_cheby,xn(:,s)); 
+    y_chebyL=myGraphCheby_op(L,c_cheby/2,xn(:,s),[0,lmaxL],true); 
     runtime_chebyL(s)=toc; 
     tic;
-    y_chebyA=myGraphCheby_op(A,c_cheby/2,xn(:,s),[-lmaxA,lmaxA]); 
+    y_chebyA=myGraphCheby_op(A,c_cheby/2,xn(:,s),[-lmaxA,lmaxA],false); 
     runtime_chebyA(s)=toc;
         
     % SNR calculation
-    MSE_chebyL(s)=norm(y_chebyL-x)/norm(x); SNR_chebyL(s)=snr(x,y_chebyL-x);
-    MSE_chebyA(s)=norm(y_chebyA-x)/norm(x); SNR_chebyA(s)=snr(x,y_chebyA-x);
+    MSE_chebyL(s)=immse(x,y_chebyL); SNR_chebyL(s)=snr(x,y_chebyL-x);
+    MSE_chebyA(s)=immse(x,y_chebyA); SNR_chebyA(s)=snr(x,y_chebyA-x);
 end
 
 % runtime (millisecond)
@@ -107,29 +110,33 @@ screen2tif('result_plot/OriSignal_SpecL');
 %%  plot signal spectrum  --- A
 figure('Position', [550, 360, 500, 300]);  hold on;
 plot(lamA,abs(VA\x),'Linewidth',2); 
-ylim([0,80]);
+ylim([0,110]);
 xlabel('Graph frequency \lambda'); title('Magnitude of Spectrum');
 set(gca,'FontSize',14);
 screen2tif('result_plot/OriSignal_SpecA');
 
-%% plot graph signal
+%% plot graph signal --- original
 figure('Position', [550, 360, 350, 250]);   hold on; 
 param.colorbar=1;
 gsp_plot_signal(G,x,param); % original signal
+c1=caxis;
 
 figure('Position', [550, 360, 350, 250]);   hold on; 
 param.colorbar=1; 
 gsp_plot_signal(G,xn(:,s),param); % noisy signal
-
+caxis(c1);
 %%  plot denoised signal --- L
 figure('Position', [550, 360, 350, 250]);   hold on; 
 param.colorbar=1;
 gsp_plot_signal(G,y_chebyL,param);
+caxis(c1);
 screen2tif('result_plot/DenoisedSignal_L');
+
 %% plot denoised signal --- A
 figure('Position', [550, 360, 350, 250]);   hold on; 
 param.colorbar=1;
 gsp_plot_signal(G,y_chebyA,param);
+% caxis(c1);
 screen2tif('result_plot/DenoisedSignal_A');
 
 
