@@ -65,6 +65,16 @@ end
 % runtime (millisecond)
 time_chebyL=sum(runtime_chebyL)/S*1000;
 time_chebyA=sum(runtime_chebyA)/S*1000;
+%% write csv files
+writematrix(L,"IOdata/L.csv");
+writematrix(A,"IOdata/A.csv");
+writematrix(x,"IOdata/x.csv");
+writematrix(xn,"IOdata/xn.csv");
+writematrix(c_cheby/2,"IOdata/filterCoeff.csv");
+writematrix([0,lmaxL],"IOdata/eigValRangeL.csv");
+writematrix([-lmaxA,lmaxA],"IOdata/eigValRangeA.csv");
+writematrix(y_chebyL,"IOdata/y_L.csv");
+writematrix(y_chebyA,"IOdata/y_A.csv");
 
 %% plot filter response --- L
 figure('Position', [550, 360, 500, 300]);  hold on; 
