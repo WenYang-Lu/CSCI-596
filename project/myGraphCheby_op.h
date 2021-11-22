@@ -51,12 +51,12 @@ double* myGraphCheby_op(double** Mtx, double* c, double* signal, double* arange,
 // Output parameters
 // y : result of filtering
 /*************************************************************/
-	int N = sizeof(signal) / sizeof(signal[0]]); //signal length
-	int M = sizeof(c) / sizeof(c[0]]); // filter length
+	int N = sizeof(signal) / sizeof(signal[0]); //signal length
+	int M = sizeof(c) / sizeof(c[0]); // filter length
 	double a1, a2;
-	double* Twf_old, Twf_cur, Twf_new;
-	double* y;
-	double* vec1; // vector container 
+	double *Twf_old, *Twf_cur, *Twf_new;
+	double *y;
+	double *vec1; // vector container 
 	Twf_old = (double*)malloc(N * sizeof(double));
 	Twf_cur = (double*)malloc(N * sizeof(double));
 	Twf_new = (double*)malloc(N * sizeof(double));
