@@ -1,0 +1,6 @@
+==========================================
+SLURM_JOB_ID = 6780960
+SLURM_JOB_NODELIST = d05-08
+TMPDIR = /tmp/SLURM_6780960
+==========================================
+/var/spool/slurm/d/job6780960/slurm_script: line 9:  6657 Segmentation fault      ./openmp_5000
