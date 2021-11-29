@@ -1,0 +1,10 @@
+==========================================
+SLURM_JOB_ID = 6778291
+SLURM_JOB_NODELIST = a01-17
+TMPDIR = /tmp/SLURM_6778291
+==========================================
+Execution time (s) = 2.785130e-03
+Execution time (s) = 1.477329e-03
+Execution time (s) = 8.276310e-04
+Execution time (s) = 5.199540e-04
+Execution time (s) = 4.919120e-04
